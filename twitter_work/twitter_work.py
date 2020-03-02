@@ -5,6 +5,7 @@
 
 import tweepy
 from key_reader import key_get
+from PIL import Image, ImageDraw, ImageFont
 
 def setup_keys(self):
 	key = key_get()
@@ -29,6 +30,24 @@ def clean_up_tweet(tweettotal):
         tweet = re.sub(r"&amp", "", tweetugly) #should remove emoji
         new_tweet.append(tweet)
 	return new_tweet
+
+def createPics(new_tweet):
+	font = ImageFont.truetype('/Library/Fonts/Calibri.ttf', 40)
+	blank = Image.new('RGBA', (1024, 768), (255,255,255,255)) # default to white background
+	countforimg = 0 # this is just to count for filenaming 
+	for tweet in new_tweet:
+		image = ImageDraw.Draw(blank)
+		draw.text((50,100), tweet, font = font)
+		image.save('./tweet_images/'+str(countforimg)+'.png')
+		countforimg += 1
+	return 1 
+
+def tweetprocessing(username):
+	keyset = setup_keys()
+	origtweet = get_username_tweets(keyset, username)
+	cleantweet = clean_up_tweet(origtweet)
+	createPics(cleantweet)
+	return 1 
 
 def main():
     print(get_username_tweets(erinkateoneill))
