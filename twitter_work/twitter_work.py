@@ -6,6 +6,7 @@
 import json
 import tweepy
 import textwrap
+import os
 import re
 import string
 from key_reader import key_get
@@ -20,7 +21,7 @@ def setup_keys():
 
 def get_username_tweets(authinp, username):
     try:
-        tweets = authinp.user_timeline(screen_name=username, count=20, tweet_mode='extended')
+        tweets = authinp.user_timeline(screen_name=username, count=100, tweet_mode='extended')
         json.dumps(tweets)
         return tweets
     except tweepy.error.TweepError as e:
@@ -43,9 +44,11 @@ def clean_up_tweet(tweettotal, username):
 	return new_tweet
 
 def createPics(new_tweet, username):
+	if not os.path.isdir(username + '_pics'):
+		os.mkdir(username + '_pics')
 	font = ImageFont.truetype('C:\Windows\Fonts\Calibri.ttf', 32)
 	blank = Image.new('RGBA', (1024, 768), (255,255,255,255)) # default to white background
-	countforimg = 0 # this is just to count for filenaming 
+	countforimg = 1 # this is just to count for filenaming 
 	for tweet in new_tweet:
 		blank = Image.new('RGBA', (1024, 768), (255,255,255,255)) # default to white background
 		image = ImageDraw.Draw(blank)
@@ -56,7 +59,8 @@ def createPics(new_tweet, username):
 		for line in tweet_list:
 			image.text((200,yloc), line, font = font, fill="#000", align="center")
 			yloc = yloc + 50
-		filename = './tweet_images/00'+str(countforimg)+'.png'
+
+		filename = './'+ str(username) + '_pics/' +str(countforimg)+'.png'
 		blank.save(filename)
 		countforimg += 1
 	return 1 
@@ -69,7 +73,6 @@ def tweetprocessing(username):
 	return 1 
 
 def main():
-	authinp = setup_keys()
 	username = "BUCollegeofENG"
 	tweetprocessing(username)
 	# tweets = get_username_tweets(authinp, username)
