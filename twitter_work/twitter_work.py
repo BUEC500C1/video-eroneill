@@ -3,54 +3,78 @@
 
 # convert twitter username to video
 
+import json
 import tweepy
+import textwrap
+import re
+import string
 from key_reader import key_get
 from PIL import Image, ImageDraw, ImageFont
 
-def setup_keys(self):
+def setup_keys():
 	key = key_get()
 	auth = tweepy.OAuthHandler(key.consumer_key, key.consumer_secret)
 	auth.set_access_token(key.access_key, key.access_secret)
-	authinp = tweepy.API(auth)
+	authinp = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
 	return authinp
 
 def get_username_tweets(authinp, username):
     try:
-        tweets = authinp.user_timeline(screen_name=username, count=20)
+        tweets = authinp.user_timeline(screen_name=username, count=20, tweet_mode='extended')
+        json.dumps(tweets)
         return tweets
     except tweepy.error.TweepError as e:
         print(e)
         return ""
 
-def clean_up_tweet(tweettotal):
+def clean_up_tweet(tweettotal, username):
 	new_tweet = []
-	for tweetugly in tweettotal:
-	    tweetugly = re.sub(r'@[A-Za-z0-9_]+','',tweetugly) #remove username
-        tweet = re.sub(r"http\S+", "", tweetugly) #remove link
-        tweet = re.sub(r"&amp", "", tweetugly) #should remove emoji
-        new_tweet.append(tweet)
+	username = '@' + username
+	for tweetugly in tweettotal: 
+		tweet = tweetugly['full_text']
+		tweet = tweet.replace(username,"") #remove username
+		tweet = tweet.replace("\n", " ")
+		tweet = re.sub(r"http\S+", "", tweet) #remove link
+		printable = set(string.printable)
+		filter(lambda x: x in printable, tweet)
+		tweet = str(tweet.encode('ascii', 'ignore'))
+		# print("this is my tweet", tweet)
+		new_tweet.append(tweet)
 	return new_tweet
 
-def createPics(new_tweet):
-	font = ImageFont.truetype('/Library/Fonts/Calibri.ttf', 40)
+def createPics(new_tweet, username):
+	font = ImageFont.truetype('C:\Windows\Fonts\Calibri.ttf', 32)
 	blank = Image.new('RGBA', (1024, 768), (255,255,255,255)) # default to white background
 	countforimg = 0 # this is just to count for filenaming 
 	for tweet in new_tweet:
+		blank = Image.new('RGBA', (1024, 768), (255,255,255,255)) # default to white background
 		image = ImageDraw.Draw(blank)
-		draw.text((50,100), tweet, font = font)
-		image.save('./tweet_images/'+str(countforimg)+'.png')
+		wrapper = textwrap.TextWrapper(width=50) 
+		tweet_list = wrapper.wrap(text=tweet)
+		yloc = 200
+		image.text((200, 100), username, font= font, fill="#000") 
+		for line in tweet_list:
+			image.text((200,yloc), line, font = font, fill="#000", align="center")
+			yloc = yloc + 50
+		filename = './tweet_images/00'+str(countforimg)+'.png'
+		blank.save(filename)
 		countforimg += 1
 	return 1 
 
 def tweetprocessing(username):
 	keyset = setup_keys()
 	origtweet = get_username_tweets(keyset, username)
-	cleantweet = clean_up_tweet(origtweet)
-	createPics(cleantweet)
+	cleantweet = clean_up_tweet(origtweet, username)
+	createPics(cleantweet, username)
 	return 1 
 
 def main():
-    print(get_username_tweets(BUCollegeofENG))
+	authinp = setup_keys()
+	username = "BUCollegeofENG"
+	tweetprocessing(username)
+	# tweets = get_username_tweets(authinp, username)
+	# print(tweets[0])
+	print('test passed')
 
 if __name__ == '__main__':
     main()
