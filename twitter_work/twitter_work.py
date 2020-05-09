@@ -50,7 +50,7 @@ def tweetprocessing(username):
 	return 1 
 
 def main():
-    print(get_username_tweets(erinkateoneill))
+    print(get_username_tweets(BUCollegeofENG))
 
 if __name__ == '__main__':
     main()
